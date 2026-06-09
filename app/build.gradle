@@ -178,7 +178,7 @@ dependencies {
     implementation 'com.google.oboe:oboe:1.9.3'
 
 
-    // required by tap research sdk
+    // required by TapResearch sdk
     implementation 'com.tapresearch:tapsdk:3.7.3--rc1'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.6.1'
