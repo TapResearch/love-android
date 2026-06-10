@@ -238,7 +238,7 @@ function tapQQResponseHandler(payload)
         for i, q in ipairs(payload.questions) do
             print(string.format("    [%d] %s (%s)", i, q.question_text, q.question_type))
             print("      ID: ", q.question_identifier)
-            -- print("      Rating Scale Size: ", tostring(q.rating_scale_size))
+            print("      Rating Scale Size: ", tostring(q.rating_scale_size))
             if q.user_answer then
                 print("      Answer: ", q.user_answer.value)
                 if q.user_answer.identifiers then

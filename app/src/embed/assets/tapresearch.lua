@@ -94,7 +94,7 @@ function tapresearch.setOnRewardReceived(func)
 end
 
 function tapresearch.setOnQuickQuestionResponse(func)
-    tapresearch.onQuickQuestionReceived = func
+    tapresearch.onQuickQuestionResponse = func
 	if func == nil then
 		native.setQuickQuestionCallback(false)
 	else
@@ -117,9 +117,9 @@ function tapresearch.onRewardReceived(rewards)
     print("[LuaToNativeBridge] Got rewards! You MUST override this function with your own!")
 end
 
--- Called from native when a Quick Question is received
-function tapresearch.onQuickQuestionReceived(payload)
-	print("[LuaToNativeBridge] Got QQ! You MUST override this function with your own!")
+-- Called from native when rewards are received
+function tapresearch.onQuickQuestionResponse(payload)
+	print("[LuaToNativeBridge] Got QQ response! You MUST override this function with your own!")
 end
 
 -- Unused functions as examples
