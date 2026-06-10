@@ -14,17 +14,24 @@ import com.tapresearch.tapsdk.models.TRPlacementDetails;
 import com.tapresearch.tapsdk.models.TRReward;
 import com.tapresearch.tapsdk.models.TRSurvey;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 
 public class TapResearchLoveBridge {
     private static final String TAG = "TapResearchLoveBridge";
 
+    private static WeakReference<Activity> activity = null;
+
     public static void setActivity(Activity activity) {
-        setAttributes(activity);
+        TapResearchLoveBridge.activity = new WeakReference<>(activity);
     }
 
-    public static void initialize(String apiToken, String userId) {
+    public static void initialize(String apiToken, String userId, String devVersion, String devEngineVersion) {
+
+        if (activity != null && activity.get() != null) {
+            setAttributes(activity.get(), devVersion, devEngineVersion);
+        }
 
         Log.d(TAG,"initialize");
         TapResearch.INSTANCE.initialize(
@@ -131,16 +138,17 @@ public class TapResearchLoveBridge {
                 });
     }
 
-    private static void setAttributes(Context context) {
+    private static void setAttributes(Context context, final String devVersion, final String devEngineVersion) {
         new Thread() {
             @Override
             public void run() {
                 try {
                     context.getSharedPreferences("tr_orca_params", 0).edit()
                             .putString("dev_platform", "love")
-                            .putString("dev_version", "3.7.0--rc0")
-                            .putString("dev_engine_version", "11.5").apply();
-                    Log.d(TAG,"setAttributes:  set dev_platform, dev_version, dev_engine_version");
+                            .putString("dev_version", devVersion)
+                            .putString("dev_engine_version", devEngineVersion).apply();
+                    Log.d(TAG,"setAttributes:  love, devVersion: " + devVersion + " devEngineVersion: " + devEngineVersion);
+                    activity = null; // activity is no longer needed
                 }catch(Throwable _){}
             }
         }.start();

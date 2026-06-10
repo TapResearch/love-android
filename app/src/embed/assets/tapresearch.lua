@@ -4,10 +4,16 @@ local tapresearch = {}
 -- Load the native bindings
 local native = require("tapresearch_native")
 
+devVersion = "3.8.0"
+
 function tapresearch.initialize(apiToken, userId)
+    local major, minor, revision, codename = love.getVersion()
+    local devEngineVersion = major .. "." .. minor .. "." .. revision
+    print("devVersion  " .. devVersion .. " devEngineVersion: " .. devEngineVersion)
+
     assert(type(apiToken) == "string", "apiToken must be a string")
     assert(type(userId) == "string", "userId must be a string")
-    native.initialize(apiToken, userId)
+    native.initialize(apiToken, userId, devVersion, devEngineVersion)
 end
 
 function initializeWithUserAttributes(apiToken, userId, attributes, clear)
