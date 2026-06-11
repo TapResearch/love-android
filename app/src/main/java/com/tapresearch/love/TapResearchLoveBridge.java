@@ -1,9 +1,9 @@
 package com.tapresearch.love;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 
+import com.tapresearch.tapsdk.TapInitOptions;
 import com.tapresearch.tapsdk.TapResearch;
 import com.tapresearch.tapsdk.callback.TRContentCallback;
 import com.tapresearch.tapsdk.callback.TRErrorCallback;
@@ -29,9 +29,7 @@ public class TapResearchLoveBridge {
 
     public static void initialize(String apiToken, String userId, String devVersion, String devEngineVersion) {
 
-        if (activity != null && activity.get() != null) {
-            setAttributes(activity.get(), devVersion, devEngineVersion);
-        }
+        setAttributes(devVersion, devEngineVersion);
 
         Log.d(TAG,"initialize");
         TapResearch.INSTANCE.initialize(
@@ -57,6 +55,35 @@ public class TapResearchLoveBridge {
                     }
                 },
                 null
+        );
+    }
+
+    public static void initializeWithUserAttributes(String apiToken, String userId, HashMap<String, Object> attributes, boolean clear, String devVersion, String devEngineVersion) {
+
+        setAttributes(devVersion, devEngineVersion);
+
+        Log.d(TAG, "initializeWithUserAttributes: " + attributes + " clear: " + clear);
+        TapInitOptions initOptions = new TapInitOptions(attributes, clear);
+        TapResearch.INSTANCE.initialize(
+                apiToken,
+                userId,
+                (TRRewardCallback) rewards -> {
+                    Log.d(TAG, "Received rewards: " + rewards);
+                    nativeOnRewardReceived(rewards.toArray(new TRReward[0]));
+                },
+                (TRErrorCallback) trError -> {
+                    Log.e(TAG, "TapResearch Error: " + trError.getDescription());
+                    nativeOnSdkError(trError.getDescription(), trError.getCode());
+                },
+                () -> {
+                    Log.d(TAG, "TapResearch SDK Ready");
+                    nativeOnSdkReady();
+                },
+                qqPayload -> {
+                    Log.d(TAG, "onQuickQuestionDataReceived: " + qqPayload);
+                    nativeOnQuickQuestionResponse(qqPayload);
+                },
+                initOptions
         );
     }
 
@@ -104,6 +131,27 @@ public class TapResearchLoveBridge {
         );
     }
 
+    public static void showContentWithCustomParameters(String placementTag, HashMap<String, Object> attributes) {
+        TapResearch.INSTANCE.showContentForPlacement(
+                placementTag,
+                new TRContentCallback() {
+                    @Override
+                    public void onTapResearchContentShown(String placementTag) {
+                        nativeOnContentShown(placementTag);
+                    }
+
+                    @Override
+                    public void onTapResearchContentDismissed(String placementTag) {
+                        nativeOnContentDismissed(placementTag);
+                    }
+                },
+                attributes,
+                trError -> {
+                    // not implemented
+                }
+        );
+    }
+
     public static boolean hasSurveys(String placementTag) {
         return TapResearch.INSTANCE.hasSurveysForPlacement(placementTag,
                 trError -> {
@@ -115,6 +163,14 @@ public class TapResearchLoveBridge {
     public static void showSurvey(String surveyId, String placementTag) {
         TapResearch.INSTANCE.showSurveyForPlacement(placementTag, surveyId,
                 null, null,
+                trError -> {
+                    // not implemented
+                });
+    }
+
+    public static void showSurveyWithCustomParameters(String surveyId, String placementTag, HashMap<String, Object> attributes) {
+        TapResearch.INSTANCE.showSurveyForPlacement(placementTag, surveyId,
+                attributes, null,
                 trError -> {
                     // not implemented
                 });
@@ -138,18 +194,20 @@ public class TapResearchLoveBridge {
                 });
     }
 
-    private static void setAttributes(Context context, final String devVersion, final String devEngineVersion) {
+    private static void setAttributes(final String devVersion, final String devEngineVersion) {
         new Thread() {
             @Override
             public void run() {
                 try {
-                    context.getSharedPreferences("tr_orca_params", 0).edit()
-                            .putString("dev_platform", "love")
-                            .putString("dev_version", devVersion)
-                            .putString("dev_engine_version", devEngineVersion).apply();
-                    Log.d(TAG,"setAttributes:  love, devVersion: " + devVersion + " devEngineVersion: " + devEngineVersion);
+                    if (activity != null && activity.get() != null) {
+                        activity.get().getSharedPreferences("tr_orca_params", 0).edit()
+                                .putString("dev_platform", "love")
+                                .putString("dev_version", devVersion)
+                                .putString("dev_engine_version", devEngineVersion).apply();
+                        Log.d(TAG, "setAttributes:  love, devVersion: " + devVersion + " devEngineVersion: " + devEngineVersion);
+                    }
                     activity = null; // activity is no longer needed
-                }catch(Throwable _){}
+                }catch(Throwable ignored){}
             }
         }.start();
     }
