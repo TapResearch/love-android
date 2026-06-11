@@ -15,7 +15,7 @@ local showSurveysOverlay = false
 
 local surveysExitButton = {
     x = 40,
-    y = 40,
+    y = 60,
     width = 40,
     height = 40,
     label = "X",
@@ -297,7 +297,14 @@ function love.load()
     tap.onTapSdkError = onTapSdkError
 
     print("[TapResearch-LuaExample] Initializing TapResearchSDK")
-    tap.initialize("fb28e5e0572876db0790ecaf6c588598", "tr-sdk-test-user-7887032225")
+    tap.initializeWithUserAttributes("fb28e5e0572876db0790ecaf6c588598", "tr-sdk-test-user-7887032225",
+
+    {
+            user_type = "vip",
+            seed_number = 500
+        },
+        true
+    )
 
     print("[TapResearch-LuaExample] Setting reward and Quick Question handlers")
     tap.setOnRewardReceived(tapRewardHandler)
